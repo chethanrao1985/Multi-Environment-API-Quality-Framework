@@ -1,0 +1,315 @@
+name: QA Test Suite
+
+on:
+  push:
+    branches: ["**"]
+  pull_request:
+    branches: ["**"]
+
+permissions:
+  contents: write   # push to gh-pages branch
+  pages: read       # poll Pages build status
+
+jobs:
+  test:
+    name: Run Tests (${{ matrix.env }})
+    runs-on: ubuntu-latest
+
+    strategy:
+      fail-fast: false
+      matrix:
+        env: [countries, weather]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up Allure (CLI)
+        run: |
+          curl -sSL https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz \
+            | tar -xz -C /opt
+          ln -s /opt/allure-2.27.0/bin/allure /usr/local/bin/allure
+
+      - name: Run ${{ matrix.env }} tests
+        run: |
+          pytest --env=${{ matrix.env }} \
+                 --alluredir=allure-results/${{ matrix.env }} \
+                 -v \
+                 --tb=short \
+                 -q
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Upload raw Allure results
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: allure-results-${{ matrix.env }}
+          path: allure-results/${{ matrix.env }}
+          retention-days: 7
+
+      - name: Print test summary
+        if: always()
+        run: |
+          echo "=== Test Summary: ${{ matrix.env }} ==="
+          python - << 'EOF'
+          import json, pathlib, sys
+
+          results_dir = pathlib.Path("allure-results/${{ matrix.env }}")
+          if not results_dir.exists():
+              print("No allure results found.")
+              sys.exit(0)
+
+          passed = failed = broken = skipped = 0
+          for f in results_dir.glob("*-result.json"):
+              try:
+                  data = json.loads(f.read_text())
+                  status = data.get("status", "unknown")
+                  if status == "passed":   passed  += 1
+                  elif status == "failed": failed  += 1
+                  elif status == "broken": broken  += 1
+                  elif status == "skipped":skipped += 1
+              except Exception:
+                  pass
+
+          total = passed + failed + broken + skipped
+          print(f"Total:   {total}")
+          print(f"Passed:  {passed}")
+          print(f"Failed:  {failed}")
+          print(f"Broken:  {broken}")
+          print(f"Skipped: {skipped}")
+
+          if failed > 0 or broken > 0:
+              sys.exit(1)
+          EOF
+
+      - name: Print report URL
+        if: always()
+        run: |
+          BASE="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          URL="${BASE}/runs/${{ github.run_number }}/${{ matrix.env }}/"
+          echo ""
+          echo "=========================================="
+          echo "  ALLURE REPORT — ${{ matrix.env }}"
+          echo "  ${URL}"
+          echo "  (live after the 'Run All Tests' job completes)"
+          echo "=========================================="
+          {
+            echo "## Allure Report — ${{ matrix.env }}"
+            echo "[Open report](${URL}) *(live after the Run All Tests job completes)*"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+  all-tests:
+    name: Run All Tests + Publish Reports
+    runs-on: ubuntu-latest
+    needs: [test]
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+
+      - name: Set up Python 3.11
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065  # v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: Install dependencies
+        run: pip install -r requirements.txt
+
+      - name: Set up Allure (CLI)
+        run: |
+          curl -sSL https://github.com/allure-framework/allure2/releases/download/2.27.0/allure-2.27.0.tgz \
+            | tar -xz -C /opt
+          ln -s /opt/allure-2.27.0/bin/allure /usr/local/bin/allure
+
+      - name: Run all tests (no --env flag)
+        run: |
+          pytest --alluredir=allure-results/all -v --tb=short
+        env:
+          PYTHONPATH: ${{ github.workspace }}
+
+      - name: Download raw countries results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: allure-results-countries
+          path: allure-results/countries
+
+      - name: Download raw weather results
+        uses: actions/download-artifact@d3f86a106a0bac45b974a628896c90dbdf5c8093  # v4
+        with:
+          name: allure-results-weather
+          path: allure-results/weather
+
+      - name: Checkout gh-pages branch
+        uses: actions/checkout@34e114876b0b11c390a56381ad16ebd13914f8d5  # v4
+        with:
+          ref: gh-pages
+          path: gh-pages-site
+        continue-on-error: true  # branch does not exist on the very first run
+
+      - name: Initialise gh-pages on first run
+        run: |
+          if [ ! -d gh-pages-site/.git ]; then
+            mkdir -p gh-pages-site
+            cd gh-pages-site
+            git init
+            git remote add origin \
+              "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git"
+            git checkout --orphan gh-pages
+          fi
+
+      - name: Restore Allure history from gh-pages
+        run: |
+          if [ -d gh-pages-site/latest/history ]; then
+            mkdir -p allure-results/all/history
+            cp -r gh-pages-site/latest/history/. allure-results/all/history/
+          fi
+          if [ -d gh-pages-site/latest/countries/history ]; then
+            mkdir -p allure-results/countries/history
+            cp -r gh-pages-site/latest/countries/history/. allure-results/countries/history/
+          fi
+          if [ -d gh-pages-site/latest/weather/history ]; then
+            mkdir -p allure-results/weather/history
+            cp -r gh-pages-site/latest/weather/history/. allure-results/weather/history/
+          fi
+
+      - name: Generate all three Allure reports
+        run: |
+          allure generate allure-results/all      --output allure-report/all      --clean
+          allure generate allure-results/countries --output allure-report/countries --clean
+          allure generate allure-results/weather   --output allure-report/weather   --clean
+
+      - name: Assemble run directory and update index
+        run: |
+          RUN="${{ github.run_number }}"
+          BASE="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+
+          # Place this run's three reports under runs/<number>/
+          mkdir -p gh-pages-site/runs/$RUN
+          cp -r allure-report/all/.      gh-pages-site/runs/$RUN/
+          cp -r allure-report/countries  gh-pages-site/runs/$RUN/countries
+          cp -r allure-report/weather    gh-pages-site/runs/$RUN/weather
+
+          # Disable Jekyll so GitHub Pages serves all files as-is
+          touch gh-pages-site/.nojekyll
+
+          # "latest" always points at the most recent run
+          rm -rf gh-pages-site/latest
+          mkdir -p gh-pages-site/latest
+          cp -r allure-report/all/.      gh-pages-site/latest/
+          cp -r allure-report/countries  gh-pages-site/latest/countries
+          cp -r allure-report/weather    gh-pages-site/latest/weather
+
+          # Keep only the 10 most recent runs to control repo size
+          cd gh-pages-site/runs
+          ls -1d */ 2>/dev/null | sort -V | head -n -10 | xargs -r rm -rf
+          cd ../..
+
+          # Rebuild root index.html
+          cat > gh-pages-site/index.html << HTMLEOF
+          <!DOCTYPE html>
+          <html>
+          <head>
+            <meta charset="utf-8">
+            <title>QA Allure Reports</title>
+            <style>
+              body { font-family: sans-serif; max-width: 760px; margin: 60px auto; color: #333; }
+              h1   { border-bottom: 2px solid #eee; padding-bottom: 8px; }
+              table{ border-collapse: collapse; width: 100%; margin-top: 16px; }
+              th,td{ text-align: left; padding: 8px 12px; border-bottom: 1px solid #eee; }
+              th   { background: #f6f8fa; }
+              a    { color: #0969da; text-decoration: none; }
+              a:hover { text-decoration: underline; }
+            </style>
+          </head>
+          <body>
+            <h1>QA Allure Reports</h1>
+            <p><strong><a href="latest/">Latest combined report</a></strong> &nbsp;|&nbsp;
+               <a href="latest/countries/">Latest countries</a> &nbsp;|&nbsp;
+               <a href="latest/weather/">Latest weather</a></p>
+            <h2>Run history</h2>
+            <table>
+              <tr><th>Run</th><th>Combined</th><th>Countries</th><th>Weather</th></tr>
+          HTMLEOF
+
+          for d in $(ls -1d gh-pages-site/runs/*/ 2>/dev/null | sort -V -r); do
+            r=$(basename $d)
+            echo "  <tr><td>#$r</td><td><a href=\"runs/$r/\">Open</a></td><td><a href=\"runs/$r/countries/\">Open</a></td><td><a href=\"runs/$r/weather/\">Open</a></td></tr>" \
+              >> gh-pages-site/index.html
+          done
+
+          cat >> gh-pages-site/index.html << HTMLEOF
+            </table>
+          </body>
+          </html>
+          HTMLEOF
+
+      - name: Commit and push to gh-pages
+        run: |
+          cd gh-pages-site
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "ci: reports for run #${{ github.run_number }} [skip ci]"
+          git push \
+            "https://x-access-token:${{ github.token }}@github.com/${{ github.repository }}.git" \
+            HEAD:gh-pages
+
+      - name: Wait for GitHub Pages to deploy
+        run: |
+          echo "Waiting for GitHub Pages to finish deploying..."
+          for i in $(seq 1 20); do
+            sleep 15
+            pages_build=$(curl -s \
+              -H "Authorization: Bearer ${{ github.token }}" \
+              -H "Accept: application/vnd.github+json" \
+              "https://api.github.com/repos/${{ github.repository }}/pages/builds/latest")
+            build_status=$(echo "$pages_build" | python3 -c "import json,sys; print(json.load(sys.stdin).get('status','unknown'))" 2>/dev/null)
+            echo "  attempt $i/20 — Pages build status: $build_status"
+            if [ "$build_status" = "built" ]; then
+              echo "Pages deployed successfully."
+              exit 0
+            elif [ "$build_status" = "errored" ]; then
+              echo "Pages build errored — URLs may not be live."
+              exit 0
+            fi
+          done
+          echo "Timed out waiting for Pages — URLs may still be deploying."
+
+      - name: Print report URLs
+        run: |
+          RUN="${{ github.run_number }}"
+          BASE="https://${{ github.repository_owner }}.github.io/${{ github.event.repository.name }}"
+          echo ""
+          echo "=========================================="
+          echo "  ALLURE REPORTS — RUN #$RUN  (live now)"
+          echo "  Combined : ${BASE}/runs/$RUN/"
+          echo "  Latest   : ${BASE}/latest/"
+          echo "  All runs : ${BASE}/"
+          echo "=========================================="
+          {
+            echo "## Allure Reports — Run #$RUN"
+            echo "| Report | URL |"
+            echo "|--------|-----|"
+            echo "| Combined | [Open](${BASE}/runs/$RUN/) |"
+            echo "| Latest   | [Open](${BASE}/latest/) |"
+            echo "| All runs | [Open](${BASE}/) |"
+          } >> "$GITHUB_STEP_SUMMARY"
+
+      - name: Upload combined report artifact
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02  # v4
+        with:
+          name: allure-report-combined
+          path: allure-report/all
+          retention-days: 30
