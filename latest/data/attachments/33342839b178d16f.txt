@@ -1,2 +1,0 @@
-Status: 400
-Body: {"error":true,"reason":"Longitude must be in range of -180 to 180°. Given: 999.0."}
