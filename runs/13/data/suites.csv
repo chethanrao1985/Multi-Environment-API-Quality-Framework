@@ -1,0 +1,86 @@
+"Status","Start Time","Stop Time","Duration in ms","Parent Suite","Suite","Sub Suite","Test Class","Test Method","Name","Description"
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestAllCountriesPopulation","","","test_meets_min_results_threshold",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:14 UTC 2026","485","tests","weather","TestNegativeWeather","","","test_out_of_range_coordinates_returns_400[999.0-0.0-latitude out of range (+999)]","
+        Coordinates outside [-90, 90] latitude or [-180, 180] longitude must
+        return HTTP 400 with error=true in the response body.
+        The API returns: {""reason"": ""Latitude must be in range ..."", ""error"": true}
+        "
+"passed","Tue May 26 06:59:10 UTC 2026","Tue May 26 06:59:10 UTC 2026","488","tests","weather","TestWeatherPerformance","","","test_forecast_response_time[Sydney]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestRegionEurope","","","test_result_count_meets_min_threshold",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_full_schema[Sydney]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","1","tests","countries","TestRegionEurope","","","test_each_result_has_name",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_timezone_field_present[New York]",""
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:08 UTC 2026","100","tests","countries","TestNegativeCountries","","","test_nonexistent_region_returns_404[INVALID_REGION_XYZZY_123]","GET /region/<garbage> must return HTTP 404."
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_hourly_entries_count_positive[S\xe3o Paulo]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_name_field_structure",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_full_schema[S\xe3o Paulo]",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_status_200[Sydney]",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","1","tests","weather","TestWeatherForecast","","","test_timezone_field_present[Sydney]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_required_fields_present",""
+"passed","Tue May 26 06:59:09 UTC 2026","Tue May 26 06:59:10 UTC 2026","489","tests","weather","TestWeatherPerformance","","","test_forecast_response_time[Tokyo]",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","1","tests","weather","TestWeatherForecast","","","test_temperature_range_reasonable[New York]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_population_positive",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_full_schema",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_languages_is_dict",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","1","tests","weather","TestWeatherForecast","","","test_timezone_field_present[Tokyo]",""
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:08 UTC 2026","102","tests","countries","TestNegativeCountries","","","test_nonexistent_region_returns_404[atlantis]","GET /region/<garbage> must return HTTP 404."
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_hourly_entries_count_positive[Tokyo]",""
+"passed","Tue May 26 06:59:11 UTC 2026","Tue May 26 06:59:11 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_full_schema[London]",""
+"passed","Tue May 26 06:59:06 UTC 2026","Tue May 26 06:59:06 UTC 2026","277","tests","countries","TestCountriesPerformance","","","test_region_europe_response_time",""
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:08 UTC 2026","124","tests","countries","TestNegativeCountries","","","test_nonexistent_country_name_returns_404[!!@@##]","GET /name/<garbage> must return HTTP 404, not 200 with empty body."
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_status_200[New York]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","1","tests","countries","TestAllCountriesPopulation","","","test_every_country_has_non_negative_population","
+        Design note — why this departs from the assignment's ""population > 0"" wording:
+
+        The assignment says ""assert every country has population > 0"", but the REST
+        Countries API legitimately returns population=0 for uninhabited territories
+        (Bouvet Island, British Indian Ocean Territory, South Georgia, Heard Island,
+        US Minor Outlying Islands). These are not data errors; they are correct.
+
+        Asserting > 0 would produce a permanent false failure on valid API data —
+        exactly the kind of brittle test a Sr Staff engineer should avoid.
+
+        Instead we assert >= 0 (no negative population is ever valid) and separately
+        verify that uninhabited territories are a tiny minority (< 10%) via
+        test_majority_of_countries_have_positive_population. Together these two tests
+        provide stronger coverage than the naive > 0 check.
+        "
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_full_schema[New York]",""
+"passed","Tue May 26 06:59:14 UTC 2026","Tue May 26 06:59:15 UTC 2026","468","tests","weather","TestNegativeWeather","","","test_out_of_range_coordinates_returns_400[0.0-999.0-longitude out of range (+999)]","
+        Coordinates outside [-90, 90] latitude or [-180, 180] longitude must
+        return HTTP 400 with error=true in the response body.
+        The API returns: {""reason"": ""Latitude must be in range ..."", ""error"": true}
+        "
+"passed","Tue May 26 06:59:06 UTC 2026","Tue May 26 06:59:06 UTC 2026","231","tests","countries","TestCountriesPerformance","","","test_name_germany_response_time",""
+"passed","Tue May 26 06:59:11 UTC 2026","Tue May 26 06:59:11 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_temperature_range_reasonable[London]",""
+"passed","Tue May 26 06:59:11 UTC 2026","Tue May 26 06:59:11 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_timezone_field_present[London]",""
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:09 UTC 2026","490","tests","weather","TestWeatherPerformance","","","test_forecast_response_time[London]",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_temperature_range_reasonable[Sydney]",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_status_200[Tokyo]",""
+"passed","Tue May 26 06:59:09 UTC 2026","Tue May 26 06:59:09 UTC 2026","467","tests","weather","TestWeatherPerformance","","","test_forecast_response_time[New York]",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_full_schema[Tokyo]",""
+"passed","Tue May 26 06:59:11 UTC 2026","Tue May 26 06:59:11 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_hourly_entries_count_positive[London]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestRegionEurope","","","test_result_count_exceeds_40",""
+"passed","Tue May 26 06:59:11 UTC 2026","Tue May 26 06:59:11 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_status_200[London]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_capital_is_list",""
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:08 UTC 2026","111","tests","countries","TestNegativeCountries","","","test_nonexistent_country_name_returns_404[12345]","GET /name/<garbage> must return HTTP 404, not 200 with empty body."
+"passed","Tue May 26 06:59:08 UTC 2026","Tue May 26 06:59:08 UTC 2026","108","tests","countries","TestNegativeCountries","","","test_nonexistent_country_name_returns_404[INVALID_COUNTRY_XYZZY_123]","GET /name/<garbage> must return HTTP 404, not 200 with empty body."
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_status_200[S\xe3o Paulo]",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_hourly_entries_count_positive[New York]",""
+"passed","Tue May 26 06:59:06 UTC 2026","Tue May 26 06:59:07 UTC 2026","307","tests","countries","TestCountriesPerformance","","","test_all_fields_response_time",""
+"passed","Tue May 26 06:59:12 UTC 2026","Tue May 26 06:59:12 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_temperature_range_reasonable[Tokyo]",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_temperature_range_reasonable[S\xe3o Paulo]",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_hourly_entries_count_positive[Sydney]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestAllCountriesPopulation","","","test_majority_of_countries_have_positive_population","
+        The overwhelming majority of entries must have population > 0.
+        Uninhabited territories (population = 0) should be a small minority.
+        "
+"passed","Tue May 26 06:59:10 UTC 2026","Tue May 26 06:59:11 UTC 2026","467","tests","weather","TestWeatherPerformance","","","test_forecast_response_time[S\xe3o Paulo]",""
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:07 UTC 2026","0","tests","countries","TestGermanySchema","","","test_currencies_is_dict",""
+"passed","Tue May 26 06:59:14 UTC 2026","Tue May 26 06:59:14 UTC 2026","490","tests","weather","TestNegativeWeather","","","test_out_of_range_coordinates_returns_400[-999.0-0.0-latitude out of range (-999)]","
+        Coordinates outside [-90, 90] latitude or [-180, 180] longitude must
+        return HTTP 400 with error=true in the response body.
+        The API returns: {""reason"": ""Latitude must be in range ..."", ""error"": true}
+        "
+"passed","Tue May 26 06:59:07 UTC 2026","Tue May 26 06:59:08 UTC 2026","302","tests","countries","TestCrossReference","","","test_germany_appears_in_europe",""
+"passed","Tue May 26 06:59:13 UTC 2026","Tue May 26 06:59:13 UTC 2026","0","tests","weather","TestWeatherForecast","","","test_timezone_field_present[S\xe3o Paulo]",""
